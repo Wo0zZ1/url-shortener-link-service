@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Link {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  baseLink  String
+  shortLink String     @unique
+  linkStats LinkStats?
+  createdAt DateTime   @default(now())
+
+  @@map("links")
+}
+
+model LinkStats {
+  id             Int            @id @default(autoincrement())
+  redirectsCount Int            @default(0)
+  createdAt      DateTime       @default(now())
+  linkId         Int            @unique
+  link           Link           @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  linkRedirects  LinkRedirect[]
+
+  @@map("link_stats")
+}
+
+model LinkRedirect {
+  id          Int       @id @default(autoincrement())
+  linkStatsId Int
+  ip          String?
+  browser     String?
+  os          String?
+  device      String?
+  isMobile    Boolean?
+  isTablet    Boolean?
+  country     String?
+  clickedAt   DateTime  @default(now())
+  linkStats   LinkStats @relation(fields: [linkStatsId], references: [id], onDelete: Cascade)
+
+  @@map("link_redirects")
+}
