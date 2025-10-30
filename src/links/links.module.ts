@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common'
-import { getLinkServiceConfig } from '@wo0zz1/url-shortener-shared'
+import { getEventEmitterConfig } from '@wo0zz1/url-shortener-shared'
 
 import { ClientsModule } from '@nestjs/microservices'
 import { GeoIPModule } from 'src/geo-ip/geo-ip.module'
@@ -12,7 +12,7 @@ import { PrismaModule } from 'src/prisma/prisma.module'
 
 @Module({
 	imports: [
-		ClientsModule.register([getLinkServiceConfig(process.env.RABBITMQ_URL!)]),
+		ClientsModule.register([getEventEmitterConfig(process.env.RABBITMQ_URL!)]),
 		GeoIPModule,
 		PrismaModule,
 	],

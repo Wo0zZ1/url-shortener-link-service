@@ -20,6 +20,7 @@ import {
 	CreateLinkResponse,
 	GetLinkByShortLinkResponse,
 	DeleteLinkResponse,
+	DeleteUserLinksResponse,
 	GetLinkStatsResponse,
 	GetQRCodeResponse,
 	GetUserLinksStatsResponse,
@@ -62,6 +63,14 @@ export class LinksController {
 		@Body() createLinkDto: CreateLinkDto,
 	): Promise<CreateLinkResponse> {
 		return this.linksService.createLink(userId, createLinkDto)
+	}
+
+	@UseGuards(GatewaySecretGuard)
+	@Delete('user/:userId')
+	async deleteUserLinks(
+		@Param('userId', ParseIntPipe) userId: number,
+	): Promise<DeleteUserLinksResponse> {
+		return this.linksService.deleteUserLinks(userId)
 	}
 
 	@UseGuards(GatewaySecretGuard)

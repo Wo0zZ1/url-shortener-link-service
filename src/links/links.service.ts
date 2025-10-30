@@ -15,9 +15,9 @@ import {
 	ILink,
 	ILinkStats,
 	LinkRedirectEvent,
-	EventService,
 	EEventPattern,
 	CreateLinkDto,
+	EVENT_EMITTER_NAME,
 } from '@wo0zz1/url-shortener-shared'
 
 import { PrismaService } from '../prisma/prisma.service'
@@ -28,11 +28,11 @@ export class LinksService implements OnModuleInit {
 	constructor(
 		private readonly prismaService: PrismaService,
 		private readonly geoIPService: GeoIPService,
-		@Inject(EventService.LINK_SERVICE) private readonly linkServiceClient: ClientProxy,
+		@Inject(EVENT_EMITTER_NAME) private readonly eventEmitter: ClientProxy,
 	) {}
 
 	async onModuleInit() {
-		await Promise.all([this.linkServiceClient.connect()])
+		await Promise.all([this.eventEmitter.connect()])
 	}
 
 	private generateShortLink(): string {
@@ -46,12 +46,13 @@ export class LinksService implements OnModuleInit {
 
 		if (link.linkStats) {
 			const linkRedirectData: LinkRedirectEvent = {
-				linkStatsId: link.linkStats.id,
+				linkId: link.id,
 				userAgent: userAgent,
 				ip: ip,
+				timestamp: new Date(),
 			}
 
-			this.linkServiceClient.emit(EEventPattern.LINK_REDIRECT, linkRedirectData)
+			this.eventEmitter.emit(EEventPattern.LINK_REDIRECT, linkRedirectData)
 		}
 
 		return link.baseLink
@@ -172,6 +173,12 @@ export class LinksService implements OnModuleInit {
 			if (error.code === 'P2025') throw new NotFoundException('Link not found')
 			throw error
 		}
+	}
+
+	async deleteUserLinks(userId: number): Promise<{ count: number }> {
+		return await this.prismaService.link.deleteMany({
+			where: { userId },
+		})
 	}
 
 	async handleLinkRedirect(
