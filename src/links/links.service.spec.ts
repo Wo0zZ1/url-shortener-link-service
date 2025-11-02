@@ -1,22 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { ClientsModule } from '@nestjs/microservices'
-import { getEventEmitterConfig } from '@wo0zz1/url-shortener-shared'
+import { EVENT_EMITTER_NAME } from '@wo0zz1/url-shortener-shared'
+
+import { GeoIPModule } from '../geo-ip/geo-ip.module'
 
 import { LinksService } from './links.service'
-import { PrismaModule } from '../prisma/prisma.module'
-import { GeoIPModule } from '../geo-ip/geo-ip.module'
+import { PrismaService } from '..//prisma/prisma.service'
 
 describe('LinksService', () => {
 	let service: LinksService
 
+	const mockPrismaService = {
+		link: {
+			findUnique: jest.fn(),
+			create: jest.fn(),
+		},
+	}
+
+	const mockEventEmitter = {
+		emit: jest.fn(),
+	}
+
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
-			imports: [
-				ClientsModule.register([getEventEmitterConfig(process.env.RABBITMQ_URL!)]),
-				GeoIPModule,
-				PrismaModule,
+			imports: [GeoIPModule],
+			providers: [
+				LinksService,
+				{ provide: PrismaService, useValue: mockPrismaService },
+				{ provide: EVENT_EMITTER_NAME, useValue: mockEventEmitter },
 			],
-			providers: [LinksService],
 		}).compile()
 
 		service = module.get<LinksService>(LinksService)
