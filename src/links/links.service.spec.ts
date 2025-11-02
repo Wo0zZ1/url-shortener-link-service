@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing'
 import { ClientsModule } from '@nestjs/microservices'
-import { getLinkServiceConfig } from '@wo0zz1/url-shortener-shared'
+import { getEventEmitterConfig } from '@wo0zz1/url-shortener-shared'
 
 import { LinksService } from './links.service'
 import { PrismaModule } from '../prisma/prisma.module'
@@ -12,7 +12,7 @@ describe('LinksService', () => {
 	beforeEach(async () => {
 		const module: TestingModule = await Test.createTestingModule({
 			imports: [
-				ClientsModule.register([getLinkServiceConfig(process.env.RABBITMQ_URL!)]),
+				ClientsModule.register([getEventEmitterConfig(process.env.RABBITMQ_URL!)]),
 				GeoIPModule,
 				PrismaModule,
 			],
